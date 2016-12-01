@@ -203,16 +203,23 @@ function ItemDAO(database) {
 
         var item = this.createDummyItem();
         var items = [];
-        for (var i=0; i<5; i++) {
+        var collection = mongoDb.collection('item');
+        collection.find({'$text':{'$search':query}}).sort({_id:1}).limit(itemsPerPage).skip(page*itemsPerPage).toArray(
+function(err, docs) {
+                console.dir(docs);
+                if (!err) return callback(docs);
+                console.dir(err);
+        });
+        /* for (var i=0; i<5; i++) {
             items.push(item);
-        }
+        } */
 
         // TODO-lab2A Replace all code above (in this method).
 
         // TODO Include the following line in the appropriate
         // place within your code to pass the items for the selected page
         // of search results to the callback.
-        callback(items);
+        // callback(items);
     }
 
 
@@ -233,8 +240,13 @@ function ItemDAO(database) {
         * a SINGLE text index on title, slogan, and description. You should
         * simply do this in the mongo shell.
         */
-
-        callback(numItems);
+        var collection = mongoDb.collection('item');
+        collection.find({'$text':{'$search':query}}).toArray(function(err, docs) {
+                console.dir(docs);
+                if (!err) return callback(docs.length);
+                console.dir(err);
+        });
+        // callback(numItems);
     }
 
 
@@ -252,13 +264,19 @@ function ItemDAO(database) {
          */
 
         var item = this.createDummyItem();
+        var collection = mongoDb.collection('item');
+        collection.findOne({'_id':itemId},function(err, doc) {
+                console.dir(doc);
+                if (!err) return callback(doc);
+                console.dir(err);
+        });
 
         // TODO-lab3 Replace all code above (in this method).
 
         // TODO Include the following line in the appropriate
         // place within your code to pass the matching item
         // to the callback.
-        callback(item);
+        // callback(item);
     }
 
 
