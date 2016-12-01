@@ -17,7 +17,11 @@
 
 var MongoClient = require('mongodb').MongoClient,
     assert = require('assert');
-
+var mongoDb;
+MongoClient.connect('mongodb://localhost:27017/mongomart', function(err, db) {
+        if (!err) return mongoDb = db;
+        console.dir(err);
+});
 
 function CartDAO(database) {
     "use strict";
@@ -42,15 +46,22 @@ function CartDAO(database) {
             userId: userId,
             items: []
         }
-        var dummyItem = this.createDummyItem();
-        userCart.items.push(dummyItem);
+        var collection = mongoDb.collection('cart');
+        collection.findOne({'userId': userId},function(err, userCart) {
+                console.dir(userCart);
+                if (!err) return callback(userCart);
+                console.dir(err);
+        });
+        // var dummyItem = this.createDummyItem();
+        // userCart.items.push(dummyItem);
+
 
         // TODO-lab5 Replace all code above (in this method).
 
         // TODO Include the following line in the appropriate
         // place within your code to pass the userCart to the
         // callback.
-        callback(userCart);
+        // callback(userCart);
     }
 
 
@@ -81,8 +92,15 @@ function CartDAO(database) {
          * how cart.itemInCart is used in the mongomart.js app.
          *
          */
-
-        callback(null);
+        var collection = mongoDb.collection('cart');
+	// console.dir(itemId);
+        collection.findOne({'userId':userId, 'cart.items"._id':{$elemMatch:{$eq:itemId}}},function(err, item) {
+                console.dir(item);
+		item = item || null;
+                if (!err) return callback(item);
+                console.dir(err);
+        });
+        // callback(null);
 
         // TODO-lab6 Replace all code above (in this method).
     }
@@ -174,14 +192,36 @@ function CartDAO(database) {
         *
         */
 
-        var userCart = {
+        /* var userCart = {
             userId: userId,
             items: []
         }
         var dummyItem = this.createDummyItem();
         dummyItem.quantity = quantity;
         userCart.items.push(dummyItem);
-        callback(userCart);
+        callback(userCart); */ 
+
+	var collection = mongoDb.collection('cart');
+        // console.dir(itemId);
+        collection.findOne({'userId':userId},function(err, cart) {
+		var itemIndex = cart.items.findIndex(function(e) { return e._id === itemId });
+		if (itemIndex > -1 && quantity) {
+			cart.items[itemIndex].quantity += quantity;	
+			collection.update({'userId': userId}, {$set:{items:cart.items}}, function(err, n) {
+				if (!err) return callback(cart);
+			});
+		}
+		if (itemIndex === -1) {
+			this.addItem(userId, itemId, function(err, cart) { 
+			
+				if (!err) return callback(cart);
+			});
+		}
+		/* if (!existsItem) 
+                console.dir(item);
+                if (!err) return callback(item);
+                console.dir(err); */ 
+        });
 
         // TODO-lab7 Replace all code above (in this method).
 
