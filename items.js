@@ -316,13 +316,19 @@ function(err, docs) {
 
         // TODO replace the following two lines with your code that will
         // update the document with a new review.
-        var doc = this.createDummyItem();
-        doc.reviews = [reviewDoc];
-
+        // var doc = this.createDummyItem();
+        // doc.reviews = [reviewDoc];
+	console.dir(reviewDoc);
+        var collection = mongoDb.collection('item');
+        collection.update({'_id':itemId}, {$push:{'reviews':reviewDoc}},function(err, docs) {
+                console.dir(docs);
+                if (!err) return callback(docs.length);
+                console.dir(err);
+        });
         // TODO Include the following line in the appropriate
         // place within your code to pass the updated doc to the
         // callback.
-        callback(doc);
+        // callback(doc);
     }
 
 
